@@ -20,7 +20,7 @@ O download das dependências requer internet. Depois da instalação, o aplicati
 2. No analisador, abra uma pasta com duplo clique na tabela ou com um clique no Treemap. Um clique em um arquivo no mapa seleciona sua linha. Ordene pelas colunas e use **Pasta acima** para voltar.
 3. **Arquivos Grandes** filtra a unidade atual. **Duplicados** usa os resultados das unidades já analisadas e confirma os grupos por comparação byte a byte após o SHA-256 completo. Hard links para o mesmo arquivo e arquivos vazios são excluídos da busca de duplicados.
 4. Em **Limpeza**, arquivos com mais de sete dias na pasta Temp local do usuário são identificados separadamente de candidatos por extensão. Revise os arquivos e decida individualmente o que deve ser enviado à Lixeira.
-5. Selecione itens com Ctrl ou Shift, clique em **Mover para a Lixeira…** e revise a confirmação. Após o envio, o DiskVision atualiza a análise das unidades afetadas.
+5. Selecione itens com Ctrl ou Shift, clique em **Mover para a Lixeira…** e revise a confirmação. Após o envio, o DiskVision remove da análise os itens enviados, atualiza os totais das pastas acima e consulta a capacidade das unidades. Use **Analisar unidade** para incorporar alterações feitas fora do DiskVision.
 
 ## Limites da análise
 

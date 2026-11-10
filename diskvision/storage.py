@@ -129,3 +129,43 @@ def byte_text(size):
         if value < 1024 or unit == "PiB":
             return f"{value:.1f} {unit}".replace(".", ",") if unit != "B" else f"{size} B"
         value /= 1024
+
+
+def remove_entries(scan, paths):
+    """Remove recycled entries and adjust the logical sizes of their ancestors."""
+    removed = set()
+    root_path = os.path.normcase(scan.root.path)
+    for path in paths:
+        path = os.path.normcase(path)
+        if path == root_path or not path.startswith(root_path.rstrip(os.sep) + os.sep):
+            continue
+        parts = os.path.relpath(path, root_path).split(os.sep)
+        ancestors = [scan.root]
+        for part in parts:
+            child = next((item for item in ancestors[-1].children
+                          if os.path.normcase(item.name) == part), None)
+            if child is None:
+                break
+            ancestors.append(child)
+        else:
+            target = ancestors.pop()
+            parent = ancestors[-1]
+            parent.children = [item for item in parent.children if item is not target]
+            for folder in ancestors:
+                folder.size -= target.size
+            # Removing a direct child changes the parent directory's metadata.
+            try:
+                info = os.lstat(parent.path)
+                if not reparse(info) and fingerprint(info)[:2] == parent.identity[:2]:
+                    parent.identity = fingerprint(info)
+                    parent.stamp = info.st_mtime_ns
+            except OSError:
+                pass
+            pending = [target]
+            while pending:
+                item = pending.pop()
+                removed.add(id(item))
+                pending.extend(item.children)
+    if removed:
+        scan.files = [item for item in scan.files if id(item) not in removed]
+    return removed

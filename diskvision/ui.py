@@ -513,20 +513,22 @@ class Window(QMainWindow):
             dialog.exec()
         affected = {os.path.splitdrive(path)[0] + os.sep for path in sent}
         if affected:
+            removed = set()
             for root in affected:
-                self.snapshots.pop(root, None)
-            self.duplicate_rows = []
-            self.change_drive()
-            self.rescan(list(sorted(affected)))
-
-    def rescan(self, roots):
-        if not roots:
+                scan = self.snapshots.get(root)
+                if scan:
+                    removed.update(storage.remove_entries(scan, sent))
+            while self.folders and id(self.folders[-1]) in removed:
+                self.folders.pop()
+            self.cleanup_rows = [row for row in self.cleanup_rows if id(row[0]) not in removed]
+            groups = {}
+            for entry, group in self.duplicate_rows:
+                if id(entry) not in removed:
+                    groups.setdefault(group, []).append(entry)
+            self.duplicate_rows = [(entry, group) for group, items in groups.items()
+                                   if len(items) > 1 for entry in items]
+            self.render()
             self.refresh_drives()
-            return
-        root, *remaining = roots
-        self.start(storage.scan, (root,),
-                   lambda scan: self.accept_scan(root, scan, lambda: self.rescan(remaining)),
-                   "Atualizando a análise após o envio à Lixeira…")
 
     def closeEvent(self, event):
         if self.busy:
